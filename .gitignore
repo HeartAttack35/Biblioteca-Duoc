@@ -1,0 +1,42 @@
+# ==========================================
+# Documentos y Evidencias del Proyecto
+# ==========================================
+/actividades 3/
+/EVIDENCIAS (fotos)/
+
+# ==========================================
+# Archivos Compilados de Java / Spring Boot
+# ==========================================
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+*.log
+
+# ==========================================
+# Herramientas de Desarrollo e IDEs
+# ==========================================
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+
+# Eclipse / Spring Tool Suite
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+# VS Code
+.vscode/
+
+# ==========================================
+# Archivos del Sistema Operativo
+# ==========================================
+.DS_Store
+Thumbs.db
