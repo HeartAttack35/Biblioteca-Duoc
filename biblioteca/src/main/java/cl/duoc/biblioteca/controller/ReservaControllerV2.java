@@ -1,0 +1,104 @@
+package cl.duoc.biblioteca.controller;
+
+import cl.duoc.biblioteca.assemblers.ReservaModelAssembler;
+import cl.duoc.biblioteca.model.Reserva;
+import cl.duoc.biblioteca.service.ReservaService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.MediaTypes;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
+
+@RestController
+@RequestMapping("/api/v2/reservas")
+public class ReservaControllerV2 {
+
+    @Autowired
+    private ReservaService reservaService;
+
+    @Autowired
+    private ReservaModelAssembler assembler;
+
+    @GetMapping(produces = MediaTypes.HAL_JSON_VALUE)
+    public CollectionModel<EntityModel<Reserva>> getAllReservas() {
+        List<EntityModel<Reserva>> reservas = reservaService.findAll().stream()
+                .map(assembler::toModel)
+                .collect(Collectors.toList());
+
+        return CollectionModel.of(reservas,
+                linkTo(methodOn(ReservaControllerV2.class).getAllReservas()).withSelfRel());
+    }
+
+    @GetMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
+    public EntityModel<Reserva> getReservaById(@PathVariable Integer id) {
+        Reserva reserva = reservaService.findById(id);
+        if (reserva == null) {
+            throw new RuntimeException("Reserva no encontrada con ID: " + id);
+        }
+        return assembler.toModel(reserva);
+    }
+
+    // 1. Obtener todas las reservas de una sala específica
+    @GetMapping(value = "/sala/{codigoSala}", produces = MediaTypes.HAL_JSON_VALUE)
+    public CollectionModel<EntityModel<Reserva>> getReservasBySala(@PathVariable Integer codigoSala) {
+        List<EntityModel<Reserva>> reservas = reservaService.findBySalaCodigo(codigoSala).stream()
+                .map(assembler::toModel)
+                .collect(Collectors.toList());
+
+        return CollectionModel.of(reservas,
+                linkTo(methodOn(ReservaControllerV2.class).getReservasBySala(codigoSala)).withSelfRel());
+    }
+
+    // 2. Obtener todas las reservas en una fecha específica
+    @GetMapping(value = "/fecha/{fecha}", produces = MediaTypes.HAL_JSON_VALUE)
+    public CollectionModel<EntityModel<Reserva>> getReservasByFecha(
+            @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") Date fecha) {
+        List<EntityModel<Reserva>> reservas = reservaService.findByFechaSolicitada(fecha).stream()
+                .map(assembler::toModel)
+                .collect(Collectors.toList());
+
+        return CollectionModel.of(reservas,
+                linkTo(methodOn(ReservaControllerV2.class).getReservasByFecha(fecha)).withSelfRel());
+    }
+
+    // 3. Obtener todas las reservas con un estado específico
+    @GetMapping(value = "/estado/{estado}", produces = MediaTypes.HAL_JSON_VALUE)
+    public CollectionModel<EntityModel<Reserva>> getReservasByEstado(@PathVariable Integer estado) {
+        List<EntityModel<Reserva>> reservas = reservaService.findByEstado(estado).stream()
+                .map(assembler::toModel)
+                .collect(Collectors.toList());
+
+        return CollectionModel.of(reservas,
+                linkTo(methodOn(ReservaControllerV2.class).getReservasByEstado(estado)).withSelfRel());
+    }
+
+    // 4. Obtener todas las reservas entre dos fechas
+    @GetMapping(value = "/rango", produces = MediaTypes.HAL_JSON_VALUE)
+    public CollectionModel<EntityModel<Reserva>> getReservasPorRango(
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date inicio,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date fin) {
+        List<EntityModel<Reserva>> reservas = reservaService.findByFechaSolicitadaBetween(inicio, fin).stream()
+                .map(assembler::toModel)
+                .collect(Collectors.toList());
+
+        return CollectionModel.of(reservas,
+                linkTo(methodOn(ReservaControllerV2.class).getReservasPorRango(inicio, fin)).withSelfRel());
+    }
+
+    // 5. Obtener el total de reservas realizadas por un estudiante (Retorna un contador plano con enlaces)
+    @GetMapping(value = "/estudiante/{idEstudiante}/total", produces = MediaTypes.HAL_JSON_VALUE)
+    public EntityModel<Long> getTotalReservasPorEstudiante(@PathVariable Integer idEstudiante) {
+        Long total = reservaService.countByEstudianteId(idEstudiante);
+        
+        return EntityModel.of(total,
+                linkTo(methodOn(ReservaControllerV2.class).getTotalReservasPorEstudiante(idEstudiante)).withSelfRel(),
+                linkTo(methodOn(EstudianteControllerV2.class).getEstudianteById(idEstudiante)).withRel("estudiante"));
+    }
+}
