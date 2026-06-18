@@ -1,39 +1,72 @@
 package cl.duoc.biblioteca.controller;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import cl.duoc.biblioteca.assemblers.SalaModelAssembler;
 import cl.duoc.biblioteca.model.Sala;
 import cl.duoc.biblioteca.service.SalaService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
 
 import java.util.List;
 
 public class SalaControllerTest {
-    @Autowired
+
+    @Mock
     private SalaService salaService;
 
-    @GetMapping
-    public List<Sala> getAllSalas() {
-        return salaService.findAll();
+    @Mock
+    private SalaModelAssembler assembler;
+
+    @InjectMocks
+    private SalaControllerV2 salaController;
+
+    private AutoCloseable closeable;
+    private Sala sala;
+
+    @BeforeEach
+    void setUp() {
+        closeable = MockitoAnnotations.openMocks(this);
+        sala = new Sala();
+        sala.setCodigo(1);
+        sala.setNombre("Sala 101");
+        sala.setCapacidad(50);
+        sala.setIdInstituto(1);
     }
 
-    @GetMapping("/{id}")
-    public Sala getSalaById(@PathVariable Integer id) {
-        return salaService.findById(id);
+    @AfterEach
+    void tearDown() throws Exception {
+        closeable.close();
     }
 
-    @PostMapping
-    public Sala createSala(@RequestBody Sala sala) {
-        return salaService.save(sala);
+    @Test
+    public void testGetAllSalas() {
+        when(salaService.findAll()).thenReturn(List.of(sala));
+        when(assembler.toModel(sala)).thenReturn(EntityModel.of(sala));
+
+        CollectionModel<EntityModel<Sala>> result = salaController.getAllSalas();
+
+        assertNotNull(result);
+        assertEquals(1, result.getContent().size());
+        assertEquals(sala, result.getContent().iterator().next().getContent());
     }
 
-    @PutMapping("/{id}")
-    public Sala updateSala(@PathVariable Integer id, @RequestBody Sala sala) {
-        sala.setCodigo(id);
-        return salaService.save(sala);
-    }
+    @Test
+    public void testGetSalaById() {
+        when(salaService.findById(1)).thenReturn(sala);
+        when(assembler.toModel(sala)).thenReturn(EntityModel.of(sala));
 
-    @DeleteMapping("/{id}")
-    public void deleteSala(@PathVariable Integer id) {
-        salaService.deleteById(id);
+        EntityModel<Sala> result = salaController.getSalaByCodigo(1);
+
+        assertNotNull(result);
+        assertEquals(1, result.getContent().getCodigo());
+        assertEquals("Sala 101", result.getContent().getNombre());
     }
 }

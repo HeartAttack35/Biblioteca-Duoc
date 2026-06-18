@@ -1,55 +1,88 @@
 package cl.duoc.biblioteca.service;
 
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
+
 import cl.duoc.biblioteca.model.Carrera;
 import cl.duoc.biblioteca.repository.CarreraRepository;
-import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-
-@SpringBootTest
 public class CarreraServiceTest {
 
-    @Autowired
-    private CarreraService carreraService;
-
-    @MockitoBean
+    @Mock
     private CarreraRepository carreraRepository;
 
+    @InjectMocks
+    private CarreraService carreraService;
+
+    private AutoCloseable closeable;
+
+    @BeforeEach
+    void setUp() {
+        closeable = MockitoAnnotations.openMocks(this);
+    }
+
+    @AfterEach
+    void tearDown() throws Exception {
+        closeable.close();
+    }
+
     @Test
-    @DisplayName("Debe retornar una lista con todas las carreras")
     public void testFindAll() {
-        Carrera carrera = new Carrera();
-        carrera.setCodigo("INF101");
-        carrera.setNombre("Ingeniería Informática");
-        when(carreraRepository.findAll()).thenReturn(List.of(carrera));
+        Carrera carreraMock = new Carrera();
+        carreraMock.setCodigo("1");
+        carreraMock.setNombre("Ingeniería");
+        when(carreraRepository.findAll()).thenReturn(List.of(carreraMock));
 
         List<Carrera> carreras = carreraService.findAll();
 
         assertNotNull(carreras);
         assertEquals(1, carreras.size());
-        assertEquals("Ingeniería Informática", carreras.get(0).getNombre());
+        assertEquals("1", carreras.get(0).getCodigo());
     }
 
     @Test
-    @DisplayName("Debe guardar y retornar una nueva carrera")
+    public void testFindByCodigo() {
+        String codigo = "1";
+        Carrera carrera = new Carrera();
+        carrera.setCodigo(codigo);
+        carrera.setNombre("Ingeniería");
+        when(carreraRepository.findById(codigo)).thenReturn(Optional.of(carrera));
+
+        Carrera found = carreraService.findById(codigo);
+
+        assertNotNull(found);
+        assertEquals(codigo, found.getCodigo());
+    }
+
+    @Test
     public void testSave() {
-        Carrera nuevaCarrera = new Carrera();
-        nuevaCarrera.setCodigo("DIS202");
-        nuevaCarrera.setNombre("Diseño Gráfico");
-        when(carreraRepository.save(any(Carrera.class))).thenReturn(nuevaCarrera);
+        Carrera carrera = new Carrera();
+        carrera.setCodigo("1");
+        carrera.setNombre("Ingeniería");
+        when(carreraRepository.save(carrera)).thenReturn(carrera);
 
-        Carrera guardada = carreraService.save(nuevaCarrera);
+        Carrera saved = carreraService.save(carrera);
 
-        assertNotNull(guardada);
-        assertEquals("DIS202", guardada.getCodigo());
+        assertNotNull(saved);
+        assertEquals("Ingeniería", saved.getNombre());
+    }
+
+    @Test
+    public void testDeleteByCodigo() {
+        String codigo = "1";
+        doNothing().when(carreraRepository).deleteById(codigo);
+
+        carreraService.delete(codigo);
+
+        verify(carreraRepository, times(1)).deleteById(codigo);
     }
 }

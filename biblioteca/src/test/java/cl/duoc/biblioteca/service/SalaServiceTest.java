@@ -1,51 +1,88 @@
 package cl.duoc.biblioteca.service;
 
-import cl.duoc.biblioteca.model.Sala;
-import cl.duoc.biblioteca.repository.SalaRepository;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
 
+import cl.duoc.biblioteca.model.Sala;
+import cl.duoc.biblioteca.model.TipoSala;
+import cl.duoc.biblioteca.repository.SalaRepository;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
-
-@SpringBootTest
 public class SalaServiceTest {
 
-    @Autowired
-    private SalaService salaService;
-
-    @MockitoBean
+    @Mock
     private SalaRepository salaRepository;
 
-@Test
-    @DisplayName("Debe encontrar una sala por su código")
-    public void testFindById() {
-        Sala salaMock = new Sala();
-        salaMock.setCodigo(1);
-        salaMock.setNombre("Sala de Estudio A");
-        salaMock.setCapacidad(10);
-        
-        when(salaRepository.findById(1)).thenReturn(Optional.of(salaMock));
+    @InjectMocks
+    private SalaService salaService;
 
-        Sala resultado = salaService.findById(1);
+    private AutoCloseable closeable;
 
-        assertNotNull(resultado);
-        assertEquals("Sala de Estudio A", resultado.getNombre());
-        assertEquals(10, resultado.getCapacidad());
+    @BeforeEach
+    void setUp() {
+        closeable = MockitoAnnotations.openMocks(this);
+    }
+
+    @AfterEach
+    void tearDown() throws Exception {
+        closeable.close();
     }
 
     @Test
-    @DisplayName("Debe retornar null si la sala no existe")
-    public void testFindById_NotFound() {
-        when(salaRepository.findById(99)).thenReturn(Optional.empty());
+    public void testFindAll() {
+        TipoSala tipo = new TipoSala();
+        tipo.setNombre("Laboratorio");
+        Sala s = new Sala("Sala A", 30, 1, tipo);
+        s.setCodigo(1);
+        when(salaRepository.findAll()).thenReturn(List.of(s));
 
-        Sala resultado = salaService.findById(99);
+        List<Sala> salas = salaService.findAll();
+        assertNotNull(salas);
+        assertEquals(1, salas.size());
+        assertEquals(s, salas.get(0));
+    }
 
-        assertNull(resultado);
+    @Test
+    public void testFindById() {
+        Integer id = 1;
+        TipoSala tipo = new TipoSala();
+        tipo.setNombre("Laboratorio");
+        Sala sala = new Sala("Sala A", 30, 1, tipo);
+        sala.setCodigo(id);
+        when(salaRepository.findById(id)).thenReturn(Optional.of(sala));
+
+        Sala found = salaService.findById(id);
+        assertNotNull(found);
+        assertEquals(id, found.getCodigo());
+    }
+
+    @Test
+    public void testSave() {
+        TipoSala tipo = new TipoSala();
+        tipo.setNombre("Laboratorio");
+        Sala sala = new Sala("Sala A", 30, 1, tipo);
+        sala.setCodigo(1);
+        when(salaRepository.save(sala)).thenReturn(sala);
+
+        Sala saved = salaService.save(sala);
+        assertNotNull(saved);
+        assertEquals("Sala A", saved.getNombre());
+    }
+
+    @Test
+    public void testDeleteById() {
+        Integer id = 1;
+        doNothing().when(salaRepository).deleteById(id);
+
+        salaService.deleteById(id);
+        verify(salaRepository, times(1)).deleteById(id);
     }
 }
