@@ -14,7 +14,9 @@ public class ReservaModelAssembler implements RepresentationModelAssembler<Reser
     @Override
     public EntityModel<Reserva> toModel(Reserva reserva) {
         return EntityModel.of(reserva,
+                // Enlace al recurso individual (self)
                 linkTo(methodOn(ReservaControllerV2.class).getReservaById(reserva.getId())).withSelfRel(),
+                // Enlace a la colección completa (reservas)
                 linkTo(methodOn(ReservaControllerV2.class).getAllReservas()).withRel("reservas"));
     }
 }
