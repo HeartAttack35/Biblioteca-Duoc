@@ -95,4 +95,64 @@ public class ReservaControllerV2 {
                 linkTo(methodOn(ReservaControllerV2.class).getTotalReservasPorEstudiante(idEstudiante)).withSelfRel(),
                 linkTo(methodOn(EstudianteControllerV2.class).getEstudianteById(idEstudiante)).withRel("estudiante"));
     }
+    
+    @GetMapping(value = "/estudiante/{idEstudiante}/fecha/{fecha}", produces = MediaTypes.HAL_JSON_VALUE)
+    public CollectionModel<EntityModel<Reserva>> getReservasEstudiantePorFecha(
+            @PathVariable Integer idEstudiante,
+            @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") Date fecha) {
+        List<EntityModel<Reserva>> reservas = reservaService.findByEstudianteIdAndFechaSolicitada(idEstudiante, fecha).stream()
+                .map(assembler::toModel)
+                .collect(Collectors.toList());
+
+        return CollectionModel.of(reservas,
+                linkTo(methodOn(ReservaControllerV2.class).getReservasEstudiantePorFecha(idEstudiante, fecha)).withSelfRel());
+    }
+
+    @GetMapping(value = "/sala/{codigoSala}/estado/{estado}", produces = MediaTypes.HAL_JSON_VALUE)
+    public CollectionModel<EntityModel<Reserva>> getReservasSalaPorEstado(
+            @PathVariable Integer codigoSala,
+            @PathVariable Integer estado) {
+        List<EntityModel<Reserva>> reservas = reservaService.findBySalaCodigoAndEstado(codigoSala, estado).stream()
+                .map(assembler::toModel)
+                .collect(Collectors.toList());
+
+        return CollectionModel.of(reservas,
+                linkTo(methodOn(ReservaControllerV2.class).getReservasSalaPorEstado(codigoSala, estado)).withSelfRel());
+    }
+
+    @GetMapping(value = "/estudiante/{idEstudiante}/rango", produces = MediaTypes.HAL_JSON_VALUE)
+    public CollectionModel<EntityModel<Reserva>> getReservasEstudiantePorRango(
+            @PathVariable Integer idEstudiante,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date inicio,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date fin) {
+        List<EntityModel<Reserva>> reservas = reservaService.findByEstudianteIdAndFechaSolicitadaBetween(idEstudiante, inicio, fin).stream()
+                .map(assembler::toModel)
+                .collect(Collectors.toList());
+
+        return CollectionModel.of(reservas,
+                linkTo(methodOn(ReservaControllerV2.class).getReservasEstudiantePorRango(idEstudiante, inicio, fin)).withSelfRel());
+    }
+    
+    @GetMapping(value = "/sala/{codigoSala}/rango", produces = MediaTypes.HAL_JSON_VALUE)
+    public CollectionModel<EntityModel<Reserva>> getReservasSalaPorRango(
+            @PathVariable Integer codigoSala,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date inicio,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date fin) {
+        List<EntityModel<Reserva>> reservas = reservaService.findBySalaCodigoAndFechaSolicitadaBetween(codigoSala, inicio, fin).stream()
+                .map(assembler::toModel)
+                .collect(Collectors.toList());
+
+        return CollectionModel.of(reservas,
+                linkTo(methodOn(ReservaControllerV2.class).getReservasSalaPorRango(codigoSala, inicio, fin)).withSelfRel());
+    }
+
+    @GetMapping(value = "/sala/{codigoSala}/total", produces = MediaTypes.HAL_JSON_VALUE)
+    public EntityModel<Map<String, Long>> getTotalReservasPorSala(@PathVariable Integer codigoSala) {
+        Long total = reservaService.countBySalaCodigo(codigoSala);
+        Map<String, Long> respuesta = Collections.singletonMap("total", total);
+
+        return EntityModel.of(respuesta,
+                linkTo(methodOn(ReservaControllerV2.class).getTotalReservasPorSala(codigoSala)).withSelfRel(),
+                linkTo(methodOn(SalaControllerV2.class).getSalaByCodigo(codigoSala)).withRel("sala"));
+    }
 }
