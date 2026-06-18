@@ -43,7 +43,7 @@ public class Sala {
         return codigo;
     }
 
-    public void setCodigo(Integer codigo; ) {
+    public void setCodigo(Integer codigo) {
         this.codigo = codigo;
     }
 

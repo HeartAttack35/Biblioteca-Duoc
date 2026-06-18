@@ -10,8 +10,10 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
@@ -36,16 +38,7 @@ public class ReservaControllerV2 {
                 linkTo(methodOn(ReservaControllerV2.class).getAllReservas()).withSelfRel());
     }
 
-    @GetMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
-    public EntityModel<Reserva> getReservaById(@PathVariable Integer id) {
-        Reserva reserva = reservaService.findById(id);
-        if (reserva == null) {
-            throw new RuntimeException("Reserva no encontrada con ID: " + id);
-        }
-        return assembler.toModel(reserva);
-    }
-
-    // 1. Obtener todas las reservas de una sala específica
+    
     @GetMapping(value = "/sala/{codigoSala}", produces = MediaTypes.HAL_JSON_VALUE)
     public CollectionModel<EntityModel<Reserva>> getReservasBySala(@PathVariable Integer codigoSala) {
         List<EntityModel<Reserva>> reservas = reservaService.findBySalaCodigo(codigoSala).stream()
@@ -92,12 +85,13 @@ public class ReservaControllerV2 {
                 linkTo(methodOn(ReservaControllerV2.class).getReservasPorRango(inicio, fin)).withSelfRel());
     }
 
-    // 5. Obtener el total de reservas realizadas por un estudiante (Retorna un contador plano con enlaces)
     @GetMapping(value = "/estudiante/{idEstudiante}/total", produces = MediaTypes.HAL_JSON_VALUE)
-    public EntityModel<Long> getTotalReservasPorEstudiante(@PathVariable Integer idEstudiante) {
+    public EntityModel<Map<String, Long>> getTotalReservasPorEstudiante(@PathVariable Integer idEstudiante) {
         Long total = reservaService.countByEstudianteId(idEstudiante);
         
-        return EntityModel.of(total,
+        Map<String, Long> respuesta = Collections.singletonMap("total", total);
+        
+        return EntityModel.of(respuesta,
                 linkTo(methodOn(ReservaControllerV2.class).getTotalReservasPorEstudiante(idEstudiante)).withSelfRel(),
                 linkTo(methodOn(EstudianteControllerV2.class).getEstudianteById(idEstudiante)).withRel("estudiante"));
     }

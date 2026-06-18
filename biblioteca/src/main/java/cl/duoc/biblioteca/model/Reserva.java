@@ -11,12 +11,10 @@ public class Reserva {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    // Relación Muchos a Uno con Estudiante
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_estudiante", referencedColumnName = "id")
     private Estudiante estudiante;
 
-    // Relación Muchos a Uno con Sala
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "codigo_sala", referencedColumnName = "codigo")
     private Sala sala;
@@ -36,11 +34,9 @@ public class Reserva {
     @Column(name = "estado")
     private Integer estado;
 
-    // Constructor vacío requerido por JPA
     public Reserva() {
     }
 
-    // Constructor con parámetros (opcional, pero útil)
     public Reserva(Estudiante estudiante, Sala sala, Date fechaSolicitada, Date horaSolicitada, Date horaCierre, Integer estado) {
         this.estudiante = estudiante;
         this.sala = sala;
@@ -49,8 +45,6 @@ public class Reserva {
         this.horaCierre = horaCierre;
         this.estado = estado;
     }
-
-    // --- Getters y Setters ---
 
     public Integer getId() {
         return id;
