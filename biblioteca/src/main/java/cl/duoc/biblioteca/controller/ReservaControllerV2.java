@@ -28,6 +28,15 @@ public class ReservaControllerV2 {
     @Autowired
     private ReservaModelAssembler assembler;
 
+    @GetMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
+    public EntityModel<Reserva> getReservaById(@PathVariable Integer id) {
+        Reserva reserva = reservaService.findById(id);
+        if (reserva == null) {
+            throw new RuntimeException("Reserva no encontrada con ID: " + id);
+        }
+        return assembler.toModel(reserva);
+    }
+
     @GetMapping(produces = MediaTypes.HAL_JSON_VALUE)
     public CollectionModel<EntityModel<Reserva>> getAllReservas() {
         List<EntityModel<Reserva>> reservas = reservaService.findAll().stream()
