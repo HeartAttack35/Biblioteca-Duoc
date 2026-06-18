@@ -24,4 +24,8 @@ public class EstudianteService {
     public Estudiante save(Estudiante estudiante) {
         return estudianteRepository.save(estudiante);
     }
+
+    public void deleteById(Integer id) {
+        estudianteRepository.deleteById(id);
+    }
 }

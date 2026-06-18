@@ -26,6 +26,10 @@ public class ReservaService {
         return reservaRepository.save(reserva);
     }
 
+    public void deleteById(Integer id) {
+        reservaRepository.deleteById(id);
+    }
+
     public List<Reserva> findByEstudianteId(Integer idEstudiante) {
         return reservaRepository.findByEstudianteId(idEstudiante);
     }

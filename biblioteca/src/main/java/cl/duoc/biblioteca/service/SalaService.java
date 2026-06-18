@@ -24,4 +24,8 @@ public class SalaService {
     public Sala save(Sala sala) {
         return salaRepository.save(sala);
     }
+
+    public void deleteById(Integer id) {
+        salaRepository.deleteById(id);
+    }
 }

@@ -24,4 +24,8 @@ public class TipoSalaService {
     public TipoSala save(TipoSala tipoSala) {
         return tipoSalaRepository.save(tipoSala);
     }
+
+    public void deleteById(Integer id) {
+        tipoSalaRepository.deleteById(id);
+    }
 }
