@@ -1,4 +1,4 @@
-package cl.duocbiblioteca.ms_gateway;
+package cl.duoc.biblioteca.ms_gateway;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

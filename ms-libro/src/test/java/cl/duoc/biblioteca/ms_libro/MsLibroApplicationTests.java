@@ -1,10 +1,10 @@
-package cl.duocbiblioteca.ms_gateway;
+package cl.duoc.biblioteca.ms_libro;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class MsGatewayApplicationTests {
+class MsLibroApplicationTests {
 
 	@Test
 	void contextLoads() {
