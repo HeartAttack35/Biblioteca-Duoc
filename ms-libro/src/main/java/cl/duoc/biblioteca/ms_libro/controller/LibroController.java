@@ -22,7 +22,7 @@ public class LibroController {
         this.libroService = libroService;
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping
     public ResponseEntity<ApiResponse<List<LibroResponse>>> listar(
             @RequestHeader("Authorization") String token) {
@@ -31,7 +31,7 @@ public class LibroController {
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<ApiResponse<LibroResponse>> crear(
             @RequestBody LibroDTO dto,

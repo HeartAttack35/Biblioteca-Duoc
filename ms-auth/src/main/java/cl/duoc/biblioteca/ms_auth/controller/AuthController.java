@@ -31,7 +31,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<AuthResponse>> login(@RequestBody AuthRequest request) {
         Optional<Usuario> usuarioOpt = usuarioRepository.findByUsername(request.getUsername());
 
-        if (usuarioOpt.isPresent() && passwordEncoder.matches(request.getPassword(), usuarioOpt.get().getPassword())) {
+        if (usuarioOpt.isPresent() && request.getPassword().equals(usuarioOpt.get().getPassword())) {
             Usuario usuario = usuarioOpt.get();
             
             String accessToken = jwtUtil.generarToken(usuario.getUsername(), usuario.getRole());

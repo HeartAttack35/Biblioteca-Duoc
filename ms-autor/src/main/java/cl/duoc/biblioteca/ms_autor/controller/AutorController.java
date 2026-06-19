@@ -21,7 +21,7 @@ public class AutorController {
         this.autorService = autorService;
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping
     public ResponseEntity<ApiResponse<List<Autor>>> listar() {
         List<Autor> autores = autorService.listarTodos();
@@ -29,7 +29,7 @@ public class AutorController {
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<ApiResponse<Autor>> crear(@RequestBody AutorDTO dto) {
         Autor nuevoAutor = new Autor(dto.getNombre());
