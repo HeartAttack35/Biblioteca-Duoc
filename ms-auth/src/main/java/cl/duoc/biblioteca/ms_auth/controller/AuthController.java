@@ -3,9 +3,8 @@ package cl.duoc.biblioteca.ms_auth.controller;
 import cl.duoc.biblioteca.ms_auth.dto.ApiResponse;
 import cl.duoc.biblioteca.ms_auth.dto.AuthRequest;
 import cl.duoc.biblioteca.ms_auth.dto.AuthResponse;
-import cl.duoc.biblioteca.ms_auth.model.Usuario;
-import cl.duoc.biblioteca.ms_auth.repository.UsuarioRepository;
-import cl.duoc.biblioteca.ms_auth.security.JwtUtil;
+import cl.duoc.biblioteca.ms_auth.service.AuthService;
+import cl.duoc.biblioteca.ms_auth.service.AuthService.CredencialesInvalidasException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -14,11 +13,15 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional;
-
+/**
+ * Controller de autenticación.
+ *
+ * Responsabilidad única: recibir la petición HTTP, delegar en AuthService
+ * y mapear el resultado (o la excepción) al código de respuesta HTTP correcto.
+ * No contiene ninguna lógica de negocio.
+ */
 @RestController
 @RequestMapping("/auth")
 @Tag(name = "Autenticación", description = """
@@ -29,14 +32,10 @@ import java.util.Optional;
         """)
 public class AuthController {
 
-    private final UsuarioRepository usuarioRepository;
-    private final JwtUtil jwtUtil;
-    private final PasswordEncoder passwordEncoder;
+    private final AuthService authService;
 
-    public AuthController(UsuarioRepository usuarioRepository, JwtUtil jwtUtil, PasswordEncoder passwordEncoder) {
-        this.usuarioRepository = usuarioRepository;
-        this.jwtUtil = jwtUtil;
-        this.passwordEncoder = passwordEncoder;
+    public AuthController(AuthService authService) {
+        this.authService = authService;
     }
 
     @Operation(
@@ -102,20 +101,12 @@ public class AuthController {
     })
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthResponse>> login(@RequestBody AuthRequest request) {
-        Optional<Usuario> usuarioOpt = usuarioRepository.findByUsername(request.getUsername());
-
-        if (usuarioOpt.isPresent() && passwordEncoder.matches(request.getPassword(), usuarioOpt.get().getPassword())) {
-            Usuario usuario = usuarioOpt.get();
-
-            String accessToken = jwtUtil.generarToken(usuario.getUsername(), usuario.getRole());
-            String refreshToken = jwtUtil.generarRefreshToken();
-
-            AuthResponse authResponse = new AuthResponse(accessToken, refreshToken);
+        try {
+            AuthResponse authResponse = authService.login(request);
             ApiResponse<AuthResponse> response = new ApiResponse<>(true, "Login exitoso", authResponse, null);
-
             return ResponseEntity.ok(response);
-        } else {
-            ApiResponse<AuthResponse> response = new ApiResponse<>(false, "Credenciales inválidas", null, "Unauthorized");
+        } catch (CredencialesInvalidasException ex) {
+            ApiResponse<AuthResponse> response = new ApiResponse<>(false, ex.getMessage(), null, "Unauthorized");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
     }
