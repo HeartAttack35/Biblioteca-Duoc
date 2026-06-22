@@ -56,9 +56,16 @@ Todas las peticiones pasan por `http://localhost:8080`.
 
 ## Documentación Swagger
 
-La documentación interactiva del microservicio principal está disponible en:
+La documentación interactiva de cada microservicio está disponible en las siguientes URLs (con todos los servicios corriendo localmente):
 
-- **Local:** [http://localhost:8080/doc/swagger-ui.html](http://localhost:8080/doc/swagger-ui.html)
+| Microservicio | URL directa | Descripción |
+|---|---|---|
+| `biblioteca` | [http://localhost:8081/doc/swagger-ui.html](http://localhost:8081/doc/swagger-ui.html) | Salas, reservas, estudiantes, carreras |
+| `ms-auth` | [http://localhost:8082/doc/swagger-ui.html](http://localhost:8082/doc/swagger-ui.html) | Autenticación JWT |
+| `ms-autor` | [http://localhost:8083/doc/swagger-ui.html](http://localhost:8083/doc/swagger-ui.html) | Gestión de autores |
+| `ms-libro` | [http://localhost:8084/doc/swagger-ui.html](http://localhost:8084/doc/swagger-ui.html) | Gestión de libros |
+
+> Todos los "Try it out" de Swagger apuntan al Gateway (`http://localhost:8080`), por lo que las peticiones pasan por el enrutamiento centralizado.
 
 ---
 
