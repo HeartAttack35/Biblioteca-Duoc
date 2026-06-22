@@ -2,12 +2,9 @@
 
 Proyecto semestral de arquitectura de microservicios para la asignatura **Desarrollo FullStack II (DSY1103)**.
 
-## Integrantes del equipo
+## Integrante del equipo
 
-<!-- Reemplaza con los nombres reales del equipo -->
-- Nombre Apellido (Integrante 1)
-- Nombre Apellido (Integrante 2)
-- Nombre Apellido (Integrante 3)
+- Rodrigo Rojas
 
 ---
 
