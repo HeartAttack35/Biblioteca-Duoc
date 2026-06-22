@@ -113,6 +113,8 @@ services:
       DB_PASSWORD: ""
       JWT_SECRET: clave_super_secreta_12345678901234567890
       SPRING_PROFILES_ACTIVE: prod
+      # URL pública del Gateway, usada por Swagger para el botón "Try it out"
+      SWAGGER_SERVER_URL: http://localhost:8080
     depends_on:
       mysql-db:
         condition: service_healthy
