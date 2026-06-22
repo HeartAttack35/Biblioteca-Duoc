@@ -85,4 +85,33 @@ public class SalaServiceTest {
         salaService.deleteById(id);
         verify(salaRepository, times(1)).deleteById(id);
     }
+
+    // ── Caminos de error ──────────────────────────────────────────
+
+    @Test
+    public void testFindById_Inexistente_RetornaNull() {
+        // Given
+        when(salaRepository.findById(999)).thenReturn(Optional.empty());
+
+        // When
+        Sala resultado = salaService.findById(999);
+
+        // Then
+        assertNull(resultado,
+                "El servicio debe retornar null cuando la sala no existe");
+    }
+
+    @Test
+    public void testFindAll_SinSalas_RetornaListaVacia() {
+        // Given
+        when(salaRepository.findAll()).thenReturn(List.of());
+
+        // When
+        List<Sala> resultado = salaService.findAll();
+
+        // Then
+        assertNotNull(resultado);
+        assertTrue(resultado.isEmpty(),
+                "Debe retornar lista vacía si no hay salas registradas");
+    }
 }

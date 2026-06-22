@@ -85,4 +85,33 @@ public class CarreraServiceTest {
 
         verify(carreraRepository, times(1)).deleteById(codigo);
     }
+
+    // ── Caminos de error ──────────────────────────────────────────
+
+    @Test
+    public void testFindByCodigo_Inexistente_RetornaNull() {
+        // Given
+        when(carreraRepository.findById("NO-EXISTE")).thenReturn(Optional.empty());
+
+        // When
+        Carrera resultado = carreraService.findById("NO-EXISTE");
+
+        // Then
+        assertNull(resultado,
+                "El servicio debe retornar null cuando la carrera no existe");
+    }
+
+    @Test
+    public void testFindAll_SinCarreras_RetornaListaVacia() {
+        // Given
+        when(carreraRepository.findAll()).thenReturn(List.of());
+
+        // When
+        List<Carrera> resultado = carreraService.findAll();
+
+        // Then
+        assertNotNull(resultado);
+        assertTrue(resultado.isEmpty(),
+                "Debe retornar lista vacía si no hay carreras registradas");
+    }
 }

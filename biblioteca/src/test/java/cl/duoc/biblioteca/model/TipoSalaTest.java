@@ -1,21 +1,47 @@
 package cl.duoc.biblioteca.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
-@Entity
-@Table(name = "tipo_sala")
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
+/**
+ * Tests unitarios del modelo TipoSala.
+ */
 public class TipoSalaTest {
-    @Id
-    private Integer idTipo;
-    private String nombre;
 
-    // Getters and Setters
+    // ─── Caso feliz ───────────────────────────────────────────────────
+
+    @Test
+    void dadoNombre_cuandoSeCreaConstrutor_entoncesSeAsignaCorrectamente() {
+        // Given - When
+        TipoSala tipo = new TipoSala("Laboratorio");
+        tipo.setIdTipo(1);
+
+        // Then
+        assertEquals(1, tipo.getIdTipo());
+        assertEquals("Laboratorio", tipo.getNombre());
+    }
+
+    @Test
+    void dadoTipoSalaVacio_cuandoSeAsignaNombre_entoncesGetterRetornaValor() {
+        // Given
+        TipoSala tipo = new TipoSala();
+
+        // When
+        tipo.setNombre("Sala Multimedia");
+
+        // Then
+        assertEquals("Sala Multimedia", tipo.getNombre());
+    }
+
+    // ─── Caso de error ────────────────────────────────────────────────
+
+    @Test
+    void dadoTipoSalaNuevo_cuandoNoSeAsignaId_entoncesIdEsNulo() {
+        // Given - When
+        TipoSala tipo = new TipoSala("Sin ID");
+
+        // Then
+        assertNull(tipo.getIdTipo(),
+                "El ID debe ser null antes de ser persistido por JPA");
+    }
 }

@@ -81,4 +81,33 @@ public class TipoSalaServiceTest {
         tipoSalaService.deleteById(id);
         verify(tipoSalaRepository, times(1)).deleteById(id);
     }
+
+    // ── Caminos de error ──────────────────────────────────────────
+
+    @Test
+    public void testFindById_Inexistente_RetornaNull() {
+        // Given
+        when(tipoSalaRepository.findById(999)).thenReturn(Optional.empty());
+
+        // When
+        TipoSala resultado = tipoSalaService.findById(999);
+
+        // Then
+        assertNull(resultado,
+                "El servicio debe retornar null cuando el tipo de sala no existe");
+    }
+
+    @Test
+    public void testFindAll_SinTipos_RetornaListaVacia() {
+        // Given
+        when(tipoSalaRepository.findAll()).thenReturn(List.of());
+
+        // When
+        List<TipoSala> resultado = tipoSalaService.findAll();
+
+        // Then
+        assertNotNull(resultado);
+        assertTrue(resultado.isEmpty(),
+                "Debe retornar lista vacía si no hay tipos de sala registrados");
+    }
 }
