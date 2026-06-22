@@ -1,14 +1,145 @@
 services:
+
+  # ──────────────────────────────────────────────
+  # Base de datos MySQL compartida
+  # Cada microservicio usa su propia base de datos
+  # (schema separado dentro del mismo servidor)
+  # ──────────────────────────────────────────────
   mysql-db:
     image: mysql:8.0
     container_name: biblioteca_db
     environment:
-      MYSQL_ALLOW_EMPTY_PASSWORD: 'true'
+      MYSQL_ALLOW_EMPTY_PASSWORD: "true"
       MYSQL_DATABASE: db_biblioteca
     ports:
       - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+      # Script de inicialización: crea los schemas adicionales al arrancar
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # ──────────────────────────────────────────────
+  # ms-auth — Autenticación JWT (puerto 8082)
+  # ──────────────────────────────────────────────
+  ms-auth:
+    build:
+      context: ./ms-auth
+      dockerfile: Dockerfile
+    container_name: ms_auth
+    ports:
+      - "8082:8082"
+    environment:
+      SERVER_PORT: 8082
+      DB_HOST: mysql-db
+      DB_PORT: 3306
+      DB_NAME: ms-user
+      DB_USER: root
+      DB_PASSWORD: ""
+      JWT_SECRET: clave_super_secreta_12345678901234567890
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+
+  # ──────────────────────────────────────────────
+  # ms-autor — Gestión de autores (puerto 8083)
+  # ──────────────────────────────────────────────
+  ms-autor:
+    build:
+      context: ./ms-autor
+      dockerfile: Dockerfile
+    container_name: ms_autor
+    ports:
+      - "8083:8083"
+    environment:
+      SERVER_PORT: 8083
+      DB_HOST: mysql-db
+      DB_PORT: 3306
+      DB_NAME: ms-autor
+      DB_USER: root
+      DB_PASSWORD: ""
+      JWT_SECRET: clave_super_secreta_12345678901234567890
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+
+  # ──────────────────────────────────────────────
+  # ms-libro — Gestión de libros (puerto 8084)
+  # Depende de ms-autor para resolver nombres de autor
+  # ──────────────────────────────────────────────
+  ms-libro:
+    build:
+      context: ./ms-libro
+      dockerfile: Dockerfile
+    container_name: ms_libro
+    ports:
+      - "8084:8084"
+    environment:
+      SERVER_PORT: 8084
+      DB_HOST: mysql-db
+      DB_PORT: 3306
+      DB_NAME: ms-libro
+      DB_USER: root
+      DB_PASSWORD: ""
+      JWT_SECRET: clave_super_secreta_12345678901234567890
+      # En Docker los servicios se comunican por nombre de contenedor, no localhost
+      MS_AUTOR_URL: http://ms-autor:8083
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      ms-autor:
+        condition: service_started
+
+  # ──────────────────────────────────────────────
+  # biblioteca — Microservicio principal de salas (puerto 8081)
+  # ──────────────────────────────────────────────
+  biblioteca:
+    build:
+      context: ./biblioteca
+      dockerfile: Dockerfile
+    container_name: ms_biblioteca
+    ports:
+      - "8081:8081"
+    environment:
+      SERVER_PORT: 8081
+      DB_HOST: mysql-db
+      DB_PORT: 3306
+      DB_NAME: db_biblioteca
+      DB_USER: root
+      DB_PASSWORD: ""
+      JWT_SECRET: clave_super_secreta_12345678901234567890
+      SPRING_PROFILES_ACTIVE: prod
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+
+  # ──────────────────────────────────────────────
+  # ms-gateway — API Gateway (puerto 8080)
+  # Punto de entrada único para todos los servicios
+  # ──────────────────────────────────────────────
+  ms-gateway:
+    build:
+      context: ./ms-gateway
+      dockerfile: Dockerfile
+    container_name: ms_gateway
+    ports:
+      - "8080:8080"
+    environment:
+      SERVER_PORT: 8080
+      # Las URLs apuntan al nombre del contenedor dentro de la red Docker
+      MS_AUTH_URL: http://ms-auth:8082
+      MS_AUTOR_URL: http://ms-autor:8083
+      MS_LIBRO_URL: http://ms-libro:8084
+      MS_BIBLIOTECA_URL: http://biblioteca:8081
+    depends_on:
+      - ms-auth
+      - ms-autor
+      - ms-libro
+      - biblioteca
 
 volumes:
   mysql_data:

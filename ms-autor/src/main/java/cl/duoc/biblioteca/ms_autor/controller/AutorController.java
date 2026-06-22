@@ -29,6 +29,15 @@ public class AutorController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<Autor>> obtenerPorId(@PathVariable Integer id) {
+        return autorService.buscarPorId(id)
+                .map(autor -> ResponseEntity.ok(new ApiResponse<>(true, "Autor encontrado", autor, null)))
+                .orElse(ResponseEntity.status(404)
+                        .body(new ApiResponse<>(false, "Autor no encontrado", null, "NOT_FOUND")));
+    }
+
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<ApiResponse<Autor>> crear(@RequestBody AutorDTO dto) {

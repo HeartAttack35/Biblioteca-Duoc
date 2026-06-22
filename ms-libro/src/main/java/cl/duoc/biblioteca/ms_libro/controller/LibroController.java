@@ -22,23 +22,32 @@ public class LibroController {
         this.libroService = libroService;
     }
 
+    /**
+     * Lista todos los libros. El token JWT se reenvía a ms-autor para
+     * resolver el nombre del autor de cada libro en tiempo real.
+     */
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping
     public ResponseEntity<ApiResponse<List<LibroResponse>>> listar(
             @RequestHeader("Authorization") String token) {
-        List<LibroResponse> libros = libroService.listarTodos();
+        // Se pasa el token para que LibroService pueda autenticarse ante ms-autor
+        List<LibroResponse> libros = libroService.listarTodosConToken(token);
         ApiResponse<List<LibroResponse>> response = new ApiResponse<>(true, "Listado obtenido", libros, null);
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Crea un libro nuevo. El token se reenvía a ms-autor para incluir
+     * los datos del autor en la respuesta.
+     */
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<ApiResponse<LibroResponse>> crear(
             @RequestBody LibroDTO dto,
             @RequestHeader("Authorization") String token) {
         Libro nuevoLibro = new Libro(dto.getTitulo(), dto.getIdAutor());
-        LibroResponse libroGuardado = libroService.crearLibro(nuevoLibro);
-        
+        LibroResponse libroGuardado = libroService.crearLibroConToken(nuevoLibro, token);
+
         ApiResponse<LibroResponse> response = new ApiResponse<>(true, "Libro creado exitosamente", libroGuardado, null);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

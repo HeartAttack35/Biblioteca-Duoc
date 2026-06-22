@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AutorService {
@@ -19,6 +20,11 @@ public class AutorService {
     @Transactional(readOnly = true)
     public List<Autor> listarTodos() {
         return autorRepository.findAll();
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<Autor> buscarPorId(Integer id) {
+        return autorRepository.findById(id);
     }
 
     @Transactional
