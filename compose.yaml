@@ -35,12 +35,14 @@ services:
       - "8082:8082"
     environment:
       SERVER_PORT: 8082
+      SPRING_PROFILES_ACTIVE: prod
       DB_HOST: mysql-db
       DB_PORT: 3306
       DB_NAME: ms-user
       DB_USER: root
       DB_PASSWORD: ""
       JWT_SECRET: clave_super_secreta_12345678901234567890
+      SWAGGER_SERVER_URL: http://localhost:8080
     depends_on:
       mysql-db:
         condition: service_healthy
@@ -57,12 +59,14 @@ services:
       - "8083:8083"
     environment:
       SERVER_PORT: 8083
+      SPRING_PROFILES_ACTIVE: prod
       DB_HOST: mysql-db
       DB_PORT: 3306
       DB_NAME: ms-autor
       DB_USER: root
       DB_PASSWORD: ""
       JWT_SECRET: clave_super_secreta_12345678901234567890
+      SWAGGER_SERVER_URL: http://localhost:8080
     depends_on:
       mysql-db:
         condition: service_healthy
@@ -80,6 +84,7 @@ services:
       - "8084:8084"
     environment:
       SERVER_PORT: 8084
+      SPRING_PROFILES_ACTIVE: prod
       DB_HOST: mysql-db
       DB_PORT: 3306
       DB_NAME: ms-libro
@@ -88,6 +93,7 @@ services:
       JWT_SECRET: clave_super_secreta_12345678901234567890
       # En Docker los servicios se comunican por nombre de contenedor, no localhost
       MS_AUTOR_URL: http://ms-autor:8083
+      SWAGGER_SERVER_URL: http://localhost:8080
     depends_on:
       mysql-db:
         condition: service_healthy
