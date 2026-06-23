@@ -141,3 +141,84 @@ cd biblioteca
 ```
 
 Las pruebas cubren la capa de servicios y controllers del microservicio `biblioteca`, usando JUnit 5 y Mockito.
+
+```bash
+# Desde la carpeta del microservicio ms-auth
+cd ms-auth
+./mvnw test
+```
+
+```bash
+# Desde la carpeta del microservicio ms-autor
+cd ms-autor
+./mvnw test
+```
+
+```bash
+# Desde la carpeta del microservicio ms-libro
+cd ms-libro
+./mvnw test
+```
+
+---
+
+## Despliegue remoto — Render + Aiven
+
+Todos los microservicios están desplegados en **Render** como entorno remoto de producción. La base de datos MySQL es gestionada por **Aiven**.
+
+### URLs remotas
+
+| Microservicio | URL remota | Estado |
+|---|---|---|
+| `ms-gateway` | [https://ms-gateway-cvcp.onrender.com](https://ms-gateway-cvcp.onrender.com) | 🟢 Activo |
+| `ms-auth` | [https://ms-auth-vucw.onrender.com](https://ms-auth-vucw.onrender.com) | 🟢 Activo |
+| `ms-autor` | [https://ms-autor.onrender.com](https://ms-autor.onrender.com) | 🟢 Activo |
+| `ms-libro` | [https://ms-libro.onrender.com](https://ms-libro.onrender.com) | 🟢 Activo |
+| `biblioteca` | [https://biblioteca-tauq.onrender.com](https://biblioteca-tauq.onrender.com) | 🟢 Activo |
+
+> Todas las peticiones en producción pasan por el Gateway: `https://ms-gateway-cvcp.onrender.com`
+
+### Verificar operatividad del servicio remoto
+
+```bash
+curl -X POST https://ms-gateway-cvcp.onrender.com/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"admin123"}'
+```
+
+Respuesta esperada:
+```json
+{
+  "success": true,
+  "message": "Login exitoso",
+  "data": {
+    "accessToken": "eyJhbGciOiJIUzI1NiJ9...",
+    "refreshToken": "550e8400-e29b-41d4-a716-446655440000"
+  },
+  "error": null
+}
+```
+
+### Documentación Swagger remota
+
+| Microservicio | URL Swagger remota |
+|---|---|
+| `biblioteca` | [https://biblioteca-tauq.onrender.com/doc/swagger-ui.html](https://biblioteca-tauq.onrender.com/doc/swagger-ui.html) |
+| `ms-auth` | [https://ms-auth-vucw.onrender.com/doc/swagger-ui.html](https://ms-auth-vucw.onrender.com/doc/swagger-ui.html) |
+| `ms-autor` | [https://ms-autor.onrender.com/doc/swagger-ui.html](https://ms-autor.onrender.com/doc/swagger-ui.html) |
+| `ms-libro` | [https://ms-libro.onrender.com/doc/swagger-ui.html](https://ms-libro.onrender.com/doc/swagger-ui.html) |
+
+### Variables de entorno configuradas en Render
+
+| Variable | Descripción |
+|---|---|
+| `SERVER_PORT` | Puerto del contenedor |
+| `SPRING_PROFILES_ACTIVE` | Perfil activo (`prod`) |
+| `DB_HOST` | Host MySQL gestionado por Aiven |
+| `DB_PORT` | Puerto MySQL (Aiven) |
+| `DB_NAME` | Schema de la base de datos |
+| `DB_USER` | Usuario MySQL |
+| `DB_PASSWORD` | Contraseña MySQL |
+| `JWT_SECRET` | Clave secreta para firma de tokens JWT |
+| `SWAGGER_SERVER_URL` | URL pública del Gateway para Swagger |
+| `MS_AUTOR_URL` | URL remota de `ms-autor` (usada por `ms-libro`) |
